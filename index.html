@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Midpoint Circle Algorithm - Detailed Step by Step</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .controls {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+    .controls label {
+      margin-right: 5px;
+    }
+    canvas {
+      display: block;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+    }
+    .log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ccc;
+      font-family: monospace;
+      margin-top: 10px;
+    }
+    .current-step {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Midpoint Circle Algorithm - Detailed Step by Step</h1>
+  <div class="controls">
+    <label>Center X: <input type="number" id="centerX" value="200"></label>
+    <label>Center Y: <input type="number" id="centerY" value="200"></label>
+    <label>Radius: <input type="number" id="radius" value="100"></label>
+    <button id="startButton">Start Animation</button>
+    <button id="nextButton" disabled>Next Step</button>
+    <button id="resetButton" disabled>Reset</button>
+  </div>
+  <canvas id="canvas" width="400" height="400"></canvas>
+  <div class="log" id="log"></div>
+
+  <script>
+    // Global variables for algorithm state
+    let centerX, centerY, radius;
+    let canvas, ctx;
+    let x, y, d;
+    let stepCount = 0;
+    let animationActive = false;
+    const logDiv = document.getElementById('log');
+
+    // Append a message to the log panel
+    function log(message) {
+      logDiv.innerHTML += message + "<br>";
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    // Clear the log panel
+    function clearLog() {
+      logDiv.innerHTML = "";
+    }
+
+    // Plot a single point (pixel) on the canvas with an optional color
+    function plotPoint(x, y, color="#000") {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, 1, 1);
+    }
+
+    // Plot points in all eight octants.
+    // If highlight is true, the current points are drawn in red.
+    function plotCirclePoints(x, y, highlight = false) {
+      const color = highlight ? "#FF0000" : "#000";
+      plotPoint(centerX + x, centerY + y, color);
+      plotPoint(centerX - x, centerY + y, color);
+      plotPoint(centerX + x, centerY - y, color);
+      plotPoint(centerX - x, centerY - y, color);
+      plotPoint(centerX + y, centerY + x, color);
+      plotPoint(centerX - y, centerY + x, color);
+      plotPoint(centerX + y, centerY - x, color);
+      plotPoint(centerX - y, centerY - x, color);
+    }
+
+    // Start the animation by initializing parameters and drawing the initial state.
+    function startAnimation() {
+      centerX = parseInt(document.getElementById('centerX').value, 10);
+      centerY = parseInt(document.getElementById('centerY').value, 10);
+      radius = parseInt(document.getElementById('radius').value, 10);
+      canvas = document.getElementById('canvas');
+      ctx = canvas.getContext('2d');
+
+      // Clear the canvas and log
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      clearLog();
+
+      // Initialize algorithm variables
+      x = 0;
+      y = radius;
+      d = 1 - radius;
+      stepCount = 0;
+      animationActive = true;
+
+      // Draw the initial points (start of the algorithm)
+      log("Step " + stepCount + ": x=" + x + ", y=" + y + ", d=" + d + " (Initial state)");
+      plotCirclePoints(x, y, true);
+
+      // Enable Next Step and Reset buttons; disable Start button
+      document.getElementById('nextButton').disabled = false;
+      document.getElementById('resetButton').disabled = false;
+      document.getElementById('startButton').disabled = true;
+    }
+
+    // Process one iteration of the algorithm.
+    function nextStep() {
+      if (!animationActive) return;
+
+      if (x < y) {
+        let decision;
+        if (d < 0) {
+          decision = "d < 0: choose East pixel";
+          d = d + 2 * x + 3;
+        } else {
+          decision = "d ≥ 0: choose South-East pixel";
+          d = d + 2 * (x - y) + 5;
+          y--;
+        }
+        x++;
+        stepCount++;
+
+        // Log the state for this step
+        log("Step " + stepCount + ": x=" + x + ", y=" + y + ", d=" + d + " (" + decision + ")");
+        // Draw the points for this iteration (highlighting the current step)
+        plotCirclePoints(x, y, true);
+      } else {
+        log("Animation complete. Total steps: " + stepCount);
+        // Disable Next Step button when finished
+        document.getElementById('nextButton').disabled = true;
+        animationActive = false;
+      }
+    }
+
+    // Reset the animation to start over.
+    function resetAnimation() {
+      animationActive = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      clearLog();
+      document.getElementById('startButton').disabled = false;
+      document.getElementById('nextButton').disabled = true;
+      document.getElementById('resetButton').disabled = true;
+    }
+
+    // Attach event listeners to the buttons
+    document.getElementById('startButton').addEventListener('click', startAnimation);
+    document.getElementById('nextButton').addEventListener('click', nextStep);
+    document.getElementById('resetButton').addEventListener('click', resetAnimation);
+  </script>
+</body>
+</html>
